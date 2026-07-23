@@ -3,7 +3,7 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Platform](https://img.shields.io/badge/platform-ESP8266-1abc9c.svg)](https://www.espressif.com/en/products/socs/esp8266-ex)
 
-![logo](C:\Users\Administrator\Desktop\openRotator7\README\logo.png)
+![logo](README/logo.png)
 
 本项目 openRotator7 是一款轻量级的卫星八木天线旋转器的固件，基于 **SARCNET Mini Rotator MK1** 的配套固件代码“Rotator7”进行移植和增强。保留了核心控制算法，同时增加了网络配置和用户交互功能。
 
