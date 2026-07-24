@@ -196,40 +196,53 @@ float diffAngle(float a, float b) {
   return diff;
 }
 
-
 void computeErrors() {
-  // 1. 将目标仰角映射到传感器实际工作的 ±90° 范围
-  float targetEl = att.elSet;
+  // 1. 将当前角度映射到 ±90° 范围（针对外置传感器）
+  float currentAz = att.az;
+  float currentEl = att.el;
   float targetAz = att.azSet;
+  float targetEl = att.elSet;
   
-  // 如果目标仰角超过 90° 或小于 -90°，执行等效翻转
+  // 如果当前仰角超过 90°，执行等效翻转（仅当使用外置传感器时）
+  if (cfg.extSensor == 1) {
+    if (currentEl > 90.0) {
+      currentEl = 180.0 - currentEl;
+      currentAz += 180.0;
+    } else if (currentEl < -90.0) {
+      currentEl = -180.0 - currentEl;
+      currentAz += 180.0;
+    }
+    // 归一化当前方位角
+    if (currentAz > 180.0) currentAz -= 360.0;
+    if (currentAz < -180.0) currentAz += 360.0;
+    att.az = currentAz;
+    att.el = currentEl;
+  }
+  
+  // 2. 将目标角度映射到 ±90° 范围
   if (targetEl > 90.0) {
     targetEl = 180.0 - targetEl;
-    targetAz += 180.0; // 方位角翻转 180°
+    targetAz += 180.0;
   } else if (targetEl < -90.0) {
     targetEl = -180.0 - targetEl;
-    targetAz += 180.0; // 方位角翻转 180°
+    targetAz += 180.0;
   }
-
-  // 2. 将方位角归一化到 -180° ~ 180°，便于计算最短路径
   if (targetAz > 180.0) targetAz -= 360.0;
   if (targetAz < -180.0) targetAz += 360.0;
-
-  // 3. 计算误差（与原逻辑一致，但使用了映射后的目标值）
+  
+  // 3. 计算误差（原逻辑保持不变）
   if (att.windup) {
     att.azError = constrain(att.azWindup, -180, 180);
     if (abs(att.azError) < 175) att.windup = false;
   } else {
-    // 计算方位角误差，考虑 ±180° 边界
     float rawAzError = att.az - targetAz;
     if (rawAzError < -180) rawAzError += 360;
     if (rawAzError > 180) rawAzError -= 360;
     att.azError = rawAzError;
   }
-
-  // 计算仰角误差（不需要特殊边界处理，因为范围小）
   att.elError = att.el - targetEl;
 }
+
 // ============================================================
 //  核心控制流程（与数据源完全解耦）
 // ============================================================
@@ -312,9 +325,7 @@ void processExternalAngle(String line) {
     int end = line.indexOf(' ', start);
     if (end < 0) end = line.length();
     String param = line.substring(start, end);
-    float newAz = param.toFloat();
-    if (newAz > 180) newAz = newAz - 360;
-    att.az = newAz;
+    att.az = param.toFloat();  // ← 不再做归一化，交给 computeErrors
     updated = true;
   }
   
@@ -323,17 +334,16 @@ void processExternalAngle(String line) {
     int end = line.indexOf(' ', start);
     if (end < 0) end = line.length();
     String param = line.substring(start, end);
-    att.el = param.toFloat();
+    att.el = param.toFloat();  // ← 不再做范围限制，交给 computeErrors
     updated = true;
   }
   
   if (updated) {
     extSensorDataReceived = true;
-    updateWindup(att.az, att.el);
-    computeErrors();
+    // updateWindup 和 computeErrors 会在 processPosition 中统一调用
+    // 这里移除 updateWindup 和 computeErrors 的调用
   }
 }
-
 // 处理目标角度命令（AZ/EL）
 void processTargetAngle(String line) {
   int firstSpace = line.indexOf(' ');
@@ -360,7 +370,7 @@ void processTargetAngle(String line) {
   }
 
 
-  computeErrors();
+  //computeErrors(); //processPosition 会在每次循环中调用 computeErrors 这里就没用了
 }
 
 // 处理用户命令（单字符命令）
