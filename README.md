@@ -3,11 +3,9 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Platform](https://img.shields.io/badge/platform-ESP8266-1abc9c.svg)](https://www.espressif.com/en/products/socs/esp8266-ex)
 
-![logo](README/logo.png)
+<img src="README/logo.png" alt="logo" style="zoom: 33%;" />
 
-本项目 openRotator7 是一款轻量级的卫星八木天线旋转器的固件，基于 **SARCNET Mini Rotator MK1** 的配套固件代码“Rotator7”进行移植和增强。保留了核心控制算法，同时增加了网络配置和用户交互功能。
-
-> **重要声明**：本固件适用于 DTrac Rotor V1 硬件设计，可作为其用户自定义的第三方固件，但**不属于 DTrac 官方项目的一部分**。。所有功能均基于公开的硬件资料和开源协议实现，旨在为 DTrac 硬件用户提供一个开源、可控、可定制的固件选项。作者并不担保该固件的功能完整性和可替代性。
+ openRotator7 是一款轻量级的卫星八木天线旋转器的固件，基于 **SARCNET Mini Rotator MK1** 的配套固件代码“Rotator7”进行移植和增强。保留了核心控制算法，同时增加了网络配置和用户交互功能。
 
 
   ## ✨ 功能特性
@@ -30,7 +28,7 @@
 
   ### 硬件适配
 
-  - 适用于 DTrac Rotor V1 硬件设计（NodeMCU/ESP12E + LSM303DLHC + L298N，铸铝或 CNC 铝外壳+铝合金支架。如采用 DIY 硬件，请尽量避免铁磁性材料！）
+  - 可适用于 DTrac Rotor V1 硬件设计（NodeMCU/ESP12E + LSM303DLHC + L298N，铸铝或 CNC 铝外壳+铝合金支架。如采用 DIY 硬件，请尽量避免铁磁性材料！）
   - **支持外置姿态传感器**：可通过 `XZ/XL` 命令上报当前角度，固件自行计算误差并驱动电机
 
 
@@ -138,7 +136,7 @@
 
   **外置传感器模式的缺点：**
 
-- 需要在上位机配置rotctl来发送数据，门槛较高
+- 需要在上位机配置hamlib rotctld来发送传感器数据，门槛较高
 
 - 传感器设备需要充电（续航24小时左右）
 

@@ -196,16 +196,40 @@ float diffAngle(float a, float b) {
   return diff;
 }
 
+
 void computeErrors() {
+  // 1. 将目标仰角映射到传感器实际工作的 ±90° 范围
+  float targetEl = att.elSet;
+  float targetAz = att.azSet;
+  
+  // 如果目标仰角超过 90° 或小于 -90°，执行等效翻转
+  if (targetEl > 90.0) {
+    targetEl = 180.0 - targetEl;
+    targetAz += 180.0; // 方位角翻转 180°
+  } else if (targetEl < -90.0) {
+    targetEl = -180.0 - targetEl;
+    targetAz += 180.0; // 方位角翻转 180°
+  }
+
+  // 2. 将方位角归一化到 -180° ~ 180°，便于计算最短路径
+  if (targetAz > 180.0) targetAz -= 360.0;
+  if (targetAz < -180.0) targetAz += 360.0;
+
+  // 3. 计算误差（与原逻辑一致，但使用了映射后的目标值）
   if (att.windup) {
     att.azError = constrain(att.azWindup, -180, 180);
     if (abs(att.azError) < 175) att.windup = false;
   } else {
-    att.azError = diffAngle(att.az, att.azSet);
+    // 计算方位角误差，考虑 ±180° 边界
+    float rawAzError = att.az - targetAz;
+    if (rawAzError < -180) rawAzError += 360;
+    if (rawAzError > 180) rawAzError -= 360;
+    att.azError = rawAzError;
   }
-  att.elError = diffAngle(att.el, att.elSet);
-}
 
+  // 计算仰角误差（不需要特殊边界处理，因为范围小）
+  att.elError = att.el - targetEl;
+}
 // ============================================================
 //  核心控制流程（与数据源完全解耦）
 // ============================================================
@@ -334,6 +358,8 @@ void processTargetAngle(String line) {
       if (att.azSet > 180) att.azSet = att.azSet - 360;
     }
   }
+
+
   computeErrors();
 }
 
